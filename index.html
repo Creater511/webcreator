@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurelio Bank — Online Banking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#132A3A;
+    --paper:#EFF3F1;
+    --surface:#FFFFFF;
+    --accent:#1E7F5C;
+    --accent-dark:#155A41;
+    --accent-warm:#C77D3B;
+    --text:#16212B;
+    --muted:#5B6B74;
+    --line:#DEE4E1;
+    --danger:#B3452C;
+    --header-bg:#FFFFFF;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E1A22;
+      --surface:#16262F;
+      --text:#E7EDEA;
+      --muted:#93A5A2;
+      --line:#243339;
+      --header-bg:#0E1A22;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E1A22;
+    --surface:#16262F;
+    --text:#E7EDEA;
+    --muted:#93A5A2;
+    --line:#243339;
+    --header-bg:#0E1A22;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    background:var(--paper);
+    font-family:'IBM Plex Sans',sans-serif;
+    color:var(--text);
+  }
+  h1,h2,h3{font-family:'Fraunces',serif;margin:0;font-weight:600;}
+  a{cursor:pointer;}
+  .icon{display:block;flex-shrink:0;}
+
+  /* ---------- App shell ---------- */
+  #app{height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{
+    height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 28px;background:var(--header-bg);border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{
+    width:32px;height:32px;border-radius:9px;background:var(--ink);
+    display:flex;align-items:center;justify-content:center;
+    color:#EFF3F1;font-family:'Fraunces',serif;font-weight:700;font-size:16px;flex-shrink:0;
+  }
+  .brand .name{font-family:'Fraunces',serif;font-weight:600;font-size:18px;color:var(--ink);}
+  :root[data-theme="dark"] .brand .name, @media (prefers-color-scheme:dark){ .brand .name{color:var(--text);} }
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    background:none;border:none;color:var(--text);cursor:pointer;padding:8px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper);}
+  .avatar-btn{
+    width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;border:none;
+    font-family:'Fraunces',serif;font-weight:600;font-size:14px;cursor:pointer;
+  }
+
+  .layout{flex:1;display:flex;min-height:0;}
+  .sidebar{
+    width:224px;flex-shrink:0;background:var(--ink);padding:18px 12px;
+    display:flex;flex-direction:column;gap:2px;overflow-y:auto;
+  }
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+    color:#B9CBC3;cursor:pointer;font-size:14px;font-weight:500;
+  }
+  .nav-item:hover{background:rgba(255,255,255,0.06);}
+  .nav-item.active{background:rgba(255,255,255,0.12);color:#fff;}
+
+  .content{flex:1;overflow-y:auto;padding:30px 32px 50px;}
+  .content-inner{max-width:800px;margin:0 auto;}
+
+  .bottomnav{
+    display:none;height:68px;flex-shrink:0;background:var(--surface);
+    border-top:1px solid var(--line);align-items:center;justify-content:space-around;
+  }
+  .nav-btn{
+    background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:var(--muted);font-size:10.5px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;
+  }
+  .nav-btn.active{color:var(--ink);font-weight:600;}
+  :root[data-theme="dark"] .nav-btn.active{color:var(--text);}
+
+  @media (max-width: 880px){
+    .sidebar{display:none;}
+    .bottomnav{display:flex;}
+    .content{padding:18px 16px 26px;}
+    .topbar{padding:0 16px;}
+  }
+
+  /* ---------- Auth / onboarding ---------- */
+  .auth-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+  .auth-card{width:100%;max-width:440px;}
+  .onboard-hero{background:var(--ink);border-radius:24px;padding:26px 22px;color:#EFF3F1;margin-bottom:22px;}
+  .onboard-hero .eyebrow{color:#9FC8B5;font-size:13px;margin-bottom:10px;}
+  .onboard-hero h1{font-size:26px;line-height:1.25;color:#fff;}
+  .step-dots{display:flex;gap:6px;margin:14px 0 22px 0;}
+  .step-dots span{height:5px;flex:1;border-radius:3px;background:var(--line);}
+  .step-dots span.active{background:var(--accent);}
+
+  /* ---------- Form elements ---------- */
+  label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px 0;}
+  input[type=text],input[type=email],input[type=tel],input[type=password],select,textarea{
+    width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface);font-family:'IBM Plex Sans',sans-serif;font-size:15px;color:var(--text);
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .btn{
+    display:block;width:100%;text-align:center;padding:14px 16px;border-radius:14px;
+    background:var(--ink);color:#fff;font-weight:600;font-size:15px;border:none;cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif;
+  }
+  .btn:active{transform:scale(0.99);}
+  .btn.secondary{background:var(--surface);color:var(--text);border:1px solid var(--line);}
+  .btn.accent{background:var(--accent);}
+  .btn.danger{background:var(--surface);color:var(--danger);border:1px solid #E7C4B8;}
+  .btn.small{padding:9px 12px;font-size:13px;border-radius:10px;width:auto;display:inline-flex;}
+  .btn.ghost{background:transparent;color:var(--text);text-decoration:underline;padding:8px;font-weight:500;}
+  .btn-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+  .field-note{font-size:11.5px;color:var(--muted);margin-top:4px;}
+
+  .kyc-row{display:flex;align-items:center;gap:12px;padding:14px;background:var(--surface);border-radius:14px;margin-bottom:10px;border:1px solid var(--line);}
+  .kyc-row .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+  .kyc-row.pending .dot{background:var(--accent-warm);}
+  .avatar-init{
+    width:56px;height:56px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;
+    justify-content:center;font-family:'Fraunces',serif;font-size:22px;margin:0 auto 10px auto;
+  }
+
+  /* ---------- Dashboard elements ---------- */
+  .greet{font-size:13px;color:var(--muted);margin-bottom:2px;}
+  .balance-card{
+    background:linear-gradient(135deg,var(--ink) 0%, #1B4358 100%);
+    border-radius:22px;padding:26px 24px;color:#fff;margin:16px 0 20px 0;
+  }
+  .balance-card .label{font-size:13px;color:#A9C9BC;margin-bottom:6px;}
+  .balance-card .amount{font-family:'Fraunces',serif;font-size:38px;font-weight:600;}
+  .balance-card .sub{font-size:12px;color:#B9D2C6;margin-top:8px;}
+
+  .quick-actions{display:flex;justify-content:space-between;gap:8px;margin-bottom:26px;}
+  .qa-btn{
+    display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:none;
+    font-family:'IBM Plex Sans',sans-serif;color:var(--text);cursor:pointer;font-size:12.5px;flex:1;
+  }
+  .qa-circle{
+    width:48px;height:48px;border-radius:50%;background:var(--surface);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--accent);
+  }
+  .qa-btn:hover .qa-circle{border-color:var(--accent);}
+
+  .section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px 0;}
+  .section-title h3{font-size:16px;}
+  .section-title a{font-size:12.5px;color:var(--accent);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:2px;}
+
+  .account-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:10px;
+    display:flex;justify-content:space-between;align-items:center;cursor:pointer;
+  }
+  .account-card .ac-left{display:flex;align-items:center;gap:12px;}
+  .cur-badge{
+    width:38px;height:38px;border-radius:11px;background:var(--paper);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;
+    font-weight:600;font-size:15px;color:var(--ink);flex-shrink:0;
+  }
+  :root[data-theme="dark"] .cur-badge{color:var(--text);}
+  .account-card .ac-name{font-weight:600;font-size:14px;}
+  .account-card .ac-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .account-card .ac-amt{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:15px;}
+
+  .tx-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer;}
+  .tx-row:last-child{border-bottom:none;}
+  .tx-icon{width:38px;height:38px;border-radius:12px;background:var(--paper);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink);}
+  :root[data-theme="dark"] .tx-icon{color:var(--text);}
+  .tx-info{flex:1;min-width:0;}
+  .tx-info .t1{font-size:14px;font-weight:600;}
+  .tx-info .t2{font-size:12px;color:var(--muted);}
+  .tx-amt{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;white-space:nowrap;}
+  .tx-amt.pos{color:var(--accent);}
+
+  /* ---------- Cards ---------- */
+  .card-visual{
+    border-radius:18px;padding:20px;color:#fff;margin-bottom:14px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#1E7F5C,#134A36);
+  }
+  .card-visual.frozen{background:linear-gradient(135deg,#7C8B93,#4B5960);}
+  .card-visual .cv-top{display:flex;justify-content:space-between;font-size:12px;opacity:.85;}
+  .card-visual .cv-num{font-family:'IBM Plex Mono',monospace;font-size:17px;letter-spacing:2px;margin:22px 0 14px 0;}
+  .card-visual .cv-bottom{display:flex;justify-content:space-between;font-size:11px;opacity:.85;}
+
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);gap:12px;}
+  .toggle-row:last-child{border-bottom:none;}
+  .toggle-row .tr-left{display:flex;align-items:center;gap:12px;min-width:0;color:var(--muted);}
+  .toggle-row .tr-label{font-size:14px;font-weight:500;color:var(--text);}
+  .toggle-row .tr-sub{font-size:12px;color:var(--muted);}
+  .switch{width:42px;height:24px;border-radius:12px;background:var(--line);position:relative;cursor:pointer;border:none;flex-shrink:0;}
+  .switch.on{background:var(--accent);}
+  .switch .knob{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .15s;}
+  .switch.on .knob{left:21px;}
+  .slider{width:100%;accent-color:var(--accent);}
+  .row-chevron{color:var(--muted);display:flex;}
+
+  .card-surface{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:6px 16px;margin-bottom:14px;}
+  .pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#E1F0E8;color:var(--accent-dark);}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;}
+  .tab{flex:1;text-align:center;padding:9px 4px;border-radius:11px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;}
+  .tab.active{background:var(--ink);color:#fff;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .qr-box{width:170px;height:170px;margin:16px auto;background:var(--surface);border-radius:12px;border:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);padding:12px;gap:3px;}
+  .qr-box div{background:var(--ink);border-radius:1px;}
+  :root[data-theme="dark"] .qr-box div{background:var(--text);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(19,42,58,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:200;}
+  .modal-sheet{background:var(--paper);width:100%;max-width:460px;border-radius:24px 24px 0 0;padding:20px 22px 28px 22px;max-height:88vh;overflow-y:auto;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .modal-head h3{font-size:19px;}
+  .close{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px;border-radius:9px;display:flex;}
+  .close:hover{background:var(--surface);}
+  @media (min-width:640px){
+    .modal-overlay{align-items:center;padding:24px;}
+    .modal-sheet{border-radius:20px;max-height:82vh;}
+  }
+
+  .chat-bubble{max-width:80%;padding:10px 13px;border-radius:14px;font-size:13.5px;margin-bottom:8px;}
+  .chat-bubble.me{background:var(--ink);color:#fff;margin-left:auto;border-bottom-right-radius:4px;}
+  .chat-bubble.them{background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px;}
+
+  .member-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);}
+  .member-row:last-child{border-bottom:none;}
+  .member-init{width:36px;height:36px;border-radius:50%;background:var(--paper);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink);flex-shrink:0;}
+  :root[data-theme="dark"] .member-init{color:var(--text);}
+  .empty{text-align:center;padding:36px 16px;color:var(--muted);font-size:13.5px;}
+
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ink);color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:13.5px;text-align:center;z-index:300;box-shadow:0 10px 25px rgba(0,0,0,.3);max-width:90vw;}
+  @media (max-width:880px){ .toast{bottom:84px;} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ================= Icon system (inline SVG, professional line-icon style) ================= */
+const ICONS = {
+  home: '<path d="M4 11L12 4l8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/>',
+  cards: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><line x1="3" y1="10.5" x2="21" y2="10.5"/>',
+  transfer: '<path d="M17 3l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  business: '<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="3" y1="14" x2="21" y2="14"/>',
+  user: '<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c0-4.4 3.4-6.8 7.5-6.8s7.5 2.4 7.5 6.8"/>',
+  sendArrow: '<line x1="7" y1="17" x2="17" y2="7"/><polyline points="8 7 17 7 17 16"/>',
+  requestArrow: '<line x1="17" y1="7" x2="7" y2="17"/><polyline points="16 17 7 17 7 8"/>',
+  exchange: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><polyline points="21 4 21 9.5 15.5 9.5"/>',
+  plusCircle: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>',
+  chat: '<path d="M4.5 5.5A2 2 0 0 1 6.5 3.5H17.5A2 2 0 0 1 19.5 5.5V14.5A2 2 0 0 1 17.5 16.5H9.5L4.5 20.5Z"/>',
+  close: '<line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/>',
+  chevron: '<polyline points="9 6 15 12 9 18"/>',
+  bell: '<path d="M12 4A5 5 0 0 0 7 9V12.5L5 16H19L17 12.5V9A5 5 0 0 0 12 4Z"/><path d="M10 19a2 2 0 0 0 4 0"/>',
+  download: '<path d="M12 3v12"/><polyline points="7.5 10.5 12 15 16.5 10.5"/><line x1="5" y1="21" x2="19" y2="21"/>',
+  lock: '<rect x="5.5" y="11" width="13" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  edit: '<path d="M4 20l0.9-4L15.7 5.2a1.7 1.7 0 0 1 2.4 0l0.7 0.7a1.7 1.7 0 0 1 0 2.4L8 19l-4 1Z"/><line x1="14" y1="6.7" x2="17.3" y2="10"/>',
+  key: '<circle cx="8" cy="15" r="4"/><line x1="10.8" y1="12.2" x2="20" y2="3"/><line x1="15.5" y1="7.5" x2="18" y2="10"/><line x1="12.5" y1="10.5" x2="14.5" y2="12.5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><line x1="3" y1="12" x2="21" y2="12"/>',
+  tag: '<path d="M3 3h7l11 11-7 7L3 14V3Z"/><circle cx="7" cy="7" r="1.4"/>',
+  paperclip: '<path d="M19.5 12L10 21.5a4 4 0 0 1-5.7-5.7L14 6.2a2.7 2.7 0 0 1 3.8 3.8L9 18.8a1.3 1.3 0 0 1-1.9-1.9l7.6-7.6"/>',
+  coffee: '<path d="M4 8h13v6.5A4.5 4.5 0 0 1 12.5 19h-4A4.5 4.5 0 0 1 4 14.5V8Z"/><path d="M17 9.5h1.2a2.3 2.3 0 0 1 0 4.6H17"/><line x1="7.3" y1="4.5" x2="7.3" y2="7"/><line x1="10.7" y1="4.5" x2="10.7" y2="7"/>',
+  cart: '<circle cx="9.5" cy="20" r="1.3"/><circle cx="17.5" cy="20" r="1.3"/><path d="M2.5 3H5L7.4 15.2A2 2 0 0 0 9.3 16.8H17.2A2 2 0 0 0 19.1 15.2L21 7H6"/>',
+  trendUp: '<polyline points="4 15 10 9 14 13 20 6"/><polyline points="14 6 20 6 20 12"/>',
+  landmark: '<polygon points="12,3 21,9 3,9"/><line x1="5" y1="9" x2="5" y2="18"/><line x1="9.5" y1="9" x2="9.5" y2="18"/><line x1="14.5" y1="9" x2="14.5" y2="18"/><line x1="19" y1="9" x2="19" y2="18"/><line x1="3" y1="21" x2="21" y2="21"/>',
+  trash: '<path d="M4 7h16"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+};
+function ic(name, size){
+  size = size || 20;
+  return '<svg class="icon" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||'')+'</svg>';
+}
+
+/* ================= State (in-memory only) ================= */
+const state = {
+  onboarded: false,
+  step: 'welcome',
+  nav: 'home',
+  profile: { name:'', email:'', phone:'', plan:'Everyday', lang:'English', otp:true, notifs:true, kycStatus:'pending' },
+  accounts: [
+    { id:'a1', name:'Everyday Account', currency:'USD', number:'•••• 4471', balance: 8420.55, blocked:false },
+    { id:'a2', name:'Euro Account', currency:'EUR', number:'•••• 2290', balance: 3110.00, blocked:false },
+    { id:'a3', name:'Crypto Wallet', currency:'BTC', number:'•••• 90ab', balance: 0.1842, blocked:false, crypto:true },
+  ],
+  cards: [
+    { id:'c1', label:'Aurelio Debit', number:'4218 •••• •••• 7742', exp:'09/29', frozen:false, limit:2500 },
+  ],
+  transactions: [
+    { id:'t1', name:'Nordic Coffee Roasters', cat:'Food & Drink', amt:-6.40, date:'Today, 08:12' },
+    { id:'t2', name:'Salary — Meridian Co.', cat:'Income', amt:3200.00, date:'Yesterday, 09:00' },
+    { id:'t3', name:'Transfer to J. Alvarez', cat:'Transfer', amt:-150.00, date:'Yesterday, 17:44' },
+    { id:'t4', name:'Fresco Market', cat:'Groceries', amt:-58.12, date:'Mon, 12:30' },
+    { id:'t5', name:'Currency Exchange EUR→USD', cat:'Exchange', amt:-500.00, date:'Sun, 10:05' },
+  ],
+  templates: [
+    { id:'r1', name:'Rent — Studio 4B', amt:900, freq:'Monthly, 1st' },
+  ],
+  corporate: null,
+  chat: [ { from:'them', text:'Hi! This is Aurelio Support. How can I help today?' } ],
+  ui: { modal:null, toast:null, activeAccount:null, activeTx:null }
+};
+
+function toast(msg){
+  state.ui.toast = msg;
+  render();
+  setTimeout(()=>{ state.ui.toast=null; render(); }, 1800);
+}
+function fmt(n, cur){
+  if(cur==='BTC') return n.toFixed(4)+' BTC';
+  return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function currencySymbol(c){ return c==='USD'?'$':c==='EUR'?'€':c==='BTC'?'₿':c; }
+
+/* ================= Onboarding screens ================= */
+function screenWelcome(){
+  return `
+  <div class="brand" style="margin-bottom:18px;"><div class="mark">A</div><div class="name">Aurelio Bank</div></div>
+  <div class="onboard-hero">
+    <div class="eyebrow">White‑label digital banking</div>
+    <h1>Your money,<br>fully in your pocket.</h1>
+  </div>
+  <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:22px;">
+    Multicurrency accounts, cards, instant transfers, and crypto‑to‑fiat — all from one branded app.
+  </p>
+  <button class="btn accent" onclick="go('form')">Create your account</button>
+  <button class="btn ghost" onclick="quickLogin()" style="width:100%;text-align:center;">I already have an account</button>
+  `;
+}
+function screenForm(){
+  const p = state.profile;
+  return `
+  <div class="brand" style="margin-bottom:18px;"><div class="mark">A</div><div class="name">Aurelio Bank</div></div>
+  <div class="step-dots"><span class="active"></span><span></span><span></span></div>
+  <h2 style="font-size:21px;margin-bottom:4px;">Create your account</h2>
+  <p style="color:var(--muted);font-size:13.5px;margin-bottom:6px;">Step 1 of 3 — Your details</p>
+  <label>Full name</label>
+  <input type="text" id="f_name" placeholder="e.g. Sam Whitfield" value="${p.name}">
+  <label>Email address</label>
+  <input type="email" id="f_email" placeholder="you@email.com" value="${p.email}">
+  <label>Phone number</label>
+  <input type="tel" id="f_phone" placeholder="+1 555 000 1234" value="${p.phone}">
+  <button class="btn accent" style="margin-top:22px;" onclick="submitForm()">Continue</button>
+  <button class="btn ghost" onclick="go('welcome')" style="width:100%;text-align:center;">Back</button>
+  `;
+}
+function submitForm(){
+  const name = document.getElementById('f_name').value.trim();
+  const email = document.getElementById('f_email').value.trim();
+  const phone = document.getElementById('f_phone').value.trim();
+  if(!name || !email){ toast('Please fill in your name and email'); return; }
+  state.profile.name = name; state.profile.email = email; state.profile.phone = phone;
+  go('kyc');
+}
+function screenKyc(){
+  const status = state.profile.kycStatus;
+  return `
+  <div class="brand" style="margin-bottom:18px;"><div class="mark">A</div><div class="name">Aurelio Bank</div></div>
+  <div class="step-dots"><span class="active"></span><span class="active"></span><span></span></div>
+  <h2 style="font-size:21px;margin-bottom:4px;">Verify your identity</h2>
+  <p style="color:var(--muted);font-size:13.5px;margin-bottom:16px;">Step 2 of 3 — KYC verification</p>
+  <div class="kyc-row ${status==='verified'?'':'pending'}">
+    <div class="dot"></div>
+    <div><div style="font-weight:600;font-size:14px;">Government ID</div>
+    <div style="font-size:12px;color:var(--muted);">${status==='verified'?'Verified':'Upload a photo ID to continue'}</div></div>
+  </div>
+  <div class="kyc-row ${status==='verified'?'':'pending'}">
+    <div class="dot"></div>
+    <div><div style="font-weight:600;font-size:14px;">Proof of address</div>
+    <div style="font-size:12px;color:var(--muted);">${status==='verified'?'Verified':'A recent utility bill or bank statement'}</div></div>
+  </div>
+  <div class="kyc-row ${status==='verified'?'':'pending'}">
+    <div class="dot"></div>
+    <div><div style="font-weight:600;font-size:14px;">Selfie match</div>
+    <div style="font-size:12px;color:var(--muted);">${status==='verified'?'Verified':'A quick liveness check'}</div></div>
+  </div>
+  <button class="btn accent" style="margin-top:20px;" onclick="runKyc()">${status==='verified'?'Continue':'Simulate document upload'}</button>
+  <p class="field-note" style="text-align:center;margin-top:10px;">This is a demo flow — no real documents are collected.</p>
+  `;
+}
+function runKyc(){
+  if(state.profile.kycStatus==='verified'){ go('done'); return; }
+  toast('Reviewing documents…');
+  setTimeout(()=>{ state.profile.kycStatus='verified'; render(); toast('Identity verified ✓'); }, 1200);
+}
+function screenDone(){
+  return `
+  <div class="brand" style="margin-bottom:18px;"><div class="mark">A</div><div class="name">Aurelio Bank</div></div>
+  <div class="step-dots"><span class="active"></span><span class="active"></span><span class="active"></span></div>
+  <div style="text-align:center;margin-top:30px;">
+    <div class="avatar-init">${(state.profile.name||'A').charAt(0).toUpperCase()}</div>
+    <h2 style="font-size:20px;">Welcome, ${state.profile.name.split(' ')[0]||'there'}.</h2>
+    <p style="color:var(--muted);font-size:13.5px;margin-top:6px;">Your Everyday Account is ready to use.</p>
+  </div>
+  <button class="btn accent" style="margin-top:34px;" onclick="finishOnboarding()">Go to my dashboard</button>
+  `;
+}
+function finishOnboarding(){ state.onboarded = true; state.nav='home'; render(); }
+function quickLogin(){
+  state.profile.name = state.profile.name || 'Sam Whitfield';
+  state.profile.email = state.profile.email || 'sam@email.com';
+  state.profile.kycStatus = 'verified';
+  state.onboarded = true; state.nav='home'; render();
+}
+
+/* ================= Home / Dashboard ================= */
+function totalBalanceUSD(){
+  return state.accounts.filter(a=>a.currency!=='BTC').reduce((s,a)=>s+a.balance,0) + state.accounts.find(a=>a.currency==='BTC').balance*61200;
+}
+function screenHome(){
+  const p = state.profile;
+  return `
+  <div class="greet">Good to see you,</div>
+  <h2 style="font-size:22px;">${p.name.split(' ')[0]||'Sam'}</h2>
+  <div class="balance-card">
+    <div class="label">Total balance</div>
+    <div class="amount">${fmt(totalBalanceUSD())}</div>
+    <div class="sub">Across ${state.accounts.length} accounts · updated just now</div>
+  </div>
+  <div class="quick-actions">
+    <button class="qa-btn" onclick="openModal('send')"><div class="qa-circle">${ic('sendArrow',20)}</div>Send</button>
+    <button class="qa-btn" onclick="openModal('request')"><div class="qa-circle">${ic('requestArrow',20)}</div>Request</button>
+    <button class="qa-btn" onclick="openModal('exchange')"><div class="qa-circle">${ic('exchange',20)}</div>Exchange</button>
+    <button class="qa-btn" onclick="openModal('topup')"><div class="qa-circle">${ic('plusCircle',20)}</div>Top up</button>
+  </div>
+  <div class="section-title"><h3>Your accounts</h3><a onclick="nav('accounts')">See all ${ic('chevron',13)}</a></div>
+  ${state.accounts.slice(0,3).map(a=>accountCardHtml(a)).join('')}
+  <div class="section-title"><h3>Recent transactions</h3><a onclick="nav('transactions')">See all ${ic('chevron',13)}</a></div>
+  <div class="card-surface">${state.transactions.slice(0,4).map(t=>txRowHtml(t)).join('')}</div>
+  `;
+}
+function accountCardHtml(a){
+  return `<div class="account-card" onclick="openAccount('${a.id}')">
+    <div class="ac-left">
+      <div class="cur-badge">${currencySymbol(a.currency)}</div>
+      <div><div class="ac-name">${a.name}</div><div class="ac-sub">${a.currency} ${a.number}${a.blocked?' · Blocked':''}</div></div>
+    </div>
+    <div class="ac-amt">${fmt(a.balance, a.currency)}</div>
+  </div>`;
+}
+function txIconName(t){
+  if(t.cat==='Food & Drink') return 'coffee';
+  if(t.cat==='Income') return 'trendUp';
+  if(t.cat==='Groceries') return 'cart';
+  if(t.cat==='Exchange') return 'exchange';
+  if(t.cat==='Transfer') return t.amt>0?'requestArrow':'sendArrow';
+  return 'plusCircle';
+}
+function txRowHtml(t){
+  return `<div class="tx-row" onclick="openTx('${t.id}')">
+    <div class="tx-icon">${ic(txIconName(t),18)}</div>
+    <div class="tx-info"><div class="t1">${t.name}</div><div class="t2">${t.cat} · ${t.date}</div></div>
+    <div class="tx-amt ${t.amt>0?'pos':''}">${t.amt>0?'+':''}${fmt(t.amt)}</div>
+  </div>`;
+}
+
+/* ================= Accounts & Cards screen ================= */
+function screenAccounts(){
+  return `
+  <h2 style="font-size:21px;margin:0 0 16px 0;">Accounts &amp; cards</h2>
+  <div class="tabs">
+    <div class="tab ${state.ui.acctTab!=='cards'?'active':''}" onclick="setAcctTab('accounts')">Accounts</div>
+    <div class="tab ${state.ui.acctTab==='cards'?'active':''}" onclick="setAcctTab('cards')">Cards</div>
+  </div>
+  ${state.ui.acctTab==='cards' ? screenCardsInner() : screenAccountsInner()}
+  `;
+}
+function setAcctTab(t){ state.ui.acctTab = t; render(); }
+function screenAccountsInner(){
+  return `
+  ${state.accounts.map(a=>accountCardHtml(a)).join('')}
+  <button class="btn secondary btn-row" style="margin-top:8px;" onclick="toast('Multicurrency account creation started — choose a currency to open a new sub-account.')">${ic('plus',16)} Open new currency account</button>
+  <p class="field-note" style="margin-top:10px;">Crypto‑to‑fiat conversion is available on the Crypto Wallet account.</p>
+  `;
+}
+function openAccount(id){ state.ui.activeAccount = id; state.ui.modal='account'; render(); }
+function modalAccount(){
+  const a = state.accounts.find(x=>x.id===state.ui.activeAccount);
+  if(!a) return '';
+  return `
+  <div class="modal-sheet">
+    <div class="modal-head"><h3>${a.name}</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 14px 0;">${a.currency} account ${a.number}</p>
+    <div class="balance-card" style="margin:0 0 16px 0;">
+      <div class="label">Available balance</div>
+      <div class="amount" style="font-size:28px;">${fmt(a.balance, a.currency)}</div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px;">
+      <button class="btn secondary small btn-row" style="width:100%;" onclick="downloadStatement('${a.id}')">${ic('download',15)} Statement</button>
+      <button class="btn ${a.blocked?'accent':'danger'} small btn-row" style="width:100%;" onclick="toggleBlock('${a.id}')">${ic('lock',15)} ${a.blocked?'Unblock':'Block'}</button>
+    </div>
+    <p class="field-note">Statements export as a plain‑text summary in this demo.</p>
+  </div>`;
+}
+function toggleBlock(id){
+  const a = state.accounts.find(x=>x.id===id); a.blocked = !a.blocked;
+  toast(a.blocked?'Account blocked':'Account unblocked'); render();
+}
+function downloadStatement(id){
+  const a = state.accounts.find(x=>x.id===id);
+  const lines = [`Aurelio Bank — Statement`,`Account: ${a.name} (${a.number})`,`Currency: ${a.currency}`,`Balance: ${fmt(a.balance,a.currency)}`,``,`Recent activity:`]
+    .concat(state.transactions.map(t=>`${t.date} | ${t.name} | ${t.amt>0?'+':''}${fmt(t.amt)}`));
+  const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a'); link.href = url; link.download = `${a.name.replace(/\s+/g,'_')}_statement.txt`;
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  toast('Statement downloaded');
+}
+
+/* ================= Cards screen ================= */
+function screenCardsInner(){
+  return `
+  ${state.cards.map(c=>cardVisualHtml(c)).join('')}
+  <button class="btn secondary btn-row" onclick="issueCard()">${ic('plus',16)} Issue a new card</button>
+  ${state.cards.map(c=>cardControlsHtml(c)).join('')}
+  `;
+}
+function cardVisualHtml(c){
+  return `<div class="card-visual ${c.frozen?'frozen':''}">
+    <div class="cv-top"><span>Aurelio Bank</span><span>${c.frozen?'FROZEN':'ACTIVE'}</span></div>
+    <div class="cv-num">${c.number}</div>
+    <div class="cv-bottom"><span>${c.label}</span><span>EXP ${c.exp}</span></div>
+  </div>`;
+}
+function cardControlsHtml(c){
+  return `<div class="card-surface" style="margin-top:14px;">
+    <div class="toggle-row">
+      <div class="tr-left">${ic('lock',18)}<div><div class="tr-label">Freeze card</div><div class="tr-sub">Instantly block new payments</div></div></div>
+      <button class="switch ${c.frozen?'on':''}" onclick="toggleFreeze('${c.id}')"><div class="knob"></div></button>
+    </div>
+    <div style="padding:12px 0 14px 0;">
+      <div class="tr-label" style="margin-bottom:8px;">Monthly spending limit — $${c.limit.toLocaleString()}</div>
+      <input type="range" class="slider" min="200" max="5000" step="100" value="${c.limit}" oninput="setLimit('${c.id}', this.value)">
+    </div>
+  </div>`;
+}
+function toggleFreeze(id){ const c=state.cards.find(x=>x.id===id); c.frozen=!c.frozen; toast(c.frozen?'Card frozen':'Card unfrozen'); render(); }
+function setLimit(id,val){ const c=state.cards.find(x=>x.id===id); c.limit=parseInt(val); render(); }
+function issueCard(){
+  const n = state.cards.length+1;
+  state.cards.push({ id:'c'+Date.now(), label:'Aurelio Card '+n, number:'4218 •••• •••• '+(1000+Math.floor(Math.random()*8999)), exp:'09/30', frozen:false, limit:1500 });
+  toast('New card issued'); render();
+}
+
+/* ================= Transactions screen ================= */
+function screenTransactions(){
+  const cats = ['All', ...new Set(state.transactions.map(t=>t.cat))];
+  const filter = state.ui.txFilter || 'All';
+  const list = filter==='All' ? state.transactions : state.transactions.filter(t=>t.cat===filter);
+  return `
+  <h2 style="font-size:21px;margin:0 0 4px 0;">Transactions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:14px;">Track spending by category.</p>
+  <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;">
+    ${cats.map(c=>`<div onclick="setTxFilter('${c}')" style="flex-shrink:0;padding:8px 14px;border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;
+      background:${filter===c?'var(--ink)':'var(--surface)'};color:${filter===c?'#fff':'var(--text)'};border:1px solid var(--line);">${c}</div>`).join('')}
+  </div>
+  <div class="card-surface">
+    ${list.map(t=>txRowHtml(t)).join('') || '<div class="empty">No transactions in this category.</div>'}
+  </div>
+  `;
+}
+function setTxFilter(c){ state.ui.txFilter = c; render(); }
+function openTx(id){ state.ui.activeTx = id; state.ui.modal='tx'; render(); }
+function modalTx(){
+  const t = state.transactions.find(x=>x.id===state.ui.activeTx);
+  if(!t) return '';
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Transaction</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <div style="text-align:center;margin-top:4px;">
+      <div class="tx-icon" style="width:52px;height:52px;margin:0 auto 12px auto;">${ic(txIconName(t),22)}</div>
+      <div style="font-family:'Fraunces',serif;font-size:22px;">${t.amt>0?'+':''}${fmt(t.amt)}</div>
+      <div style="color:var(--muted);font-size:13px;margin-top:4px;">${t.name}</div>
+    </div>
+    <div class="card-surface" style="margin-top:18px;">
+      <div class="toggle-row"><span class="tr-sub">Category</span><span class="tr-label">${t.cat}</span></div>
+      <div class="toggle-row"><span class="tr-sub">Date</span><span class="tr-label">${t.date}</span></div>
+      <div class="toggle-row"><span class="tr-sub">Status</span><span class="pill">Completed</span></div>
+    </div>
+    <button class="btn secondary btn-row" style="margin-top:14px;" onclick="startSupportChat('${t.id}')">${ic('chat',17)} Chat with support about this</button>
+  </div>`;
+}
+function startSupportChat(txId){
+  const t = state.transactions.find(x=>x.id===txId);
+  state.chat.push({from:'me', text:`I have a question about "${t.name}" (${fmt(t.amt)}).`});
+  state.chat.push({from:'them', text:'Thanks — I can see that transaction. It settled successfully. What would you like to know?'});
+  state.ui.modal='chat'; render();
+}
+
+/* ================= Transfers / modals ================= */
+function openModal(type){ state.ui.modal = type; render(); }
+function closeModal(){ state.ui.modal = null; render(); }
+
+function modalSend(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Send money</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <div class="tabs">
+      <div class="tab ${state.ui.sendMethod!=='iban'&&state.ui.sendMethod!=='qr'?'active':''}" onclick="setSendMethod('contact')">Contact</div>
+      <div class="tab ${state.ui.sendMethod==='iban'?'active':''}" onclick="setSendMethod('iban')">Card / IBAN</div>
+      <div class="tab ${state.ui.sendMethod==='qr'?'active':''}" onclick="setSendMethod('qr')">QR code</div>
+    </div>
+    ${sendMethodBody()}
+  </div>`;
+}
+function setSendMethod(m){ state.ui.sendMethod=m; render(); }
+function sendMethodBody(){
+  const m = state.ui.sendMethod || 'contact';
+  if(m==='qr'){
+    return `<div style="text-align:center;">
+      <p style="color:var(--muted);font-size:13px;">Share this code to receive an instant payment.</p>
+      ${qrBoxHtml()}
+      <button class="btn accent" onclick="toast('Payment link copied')">Copy payment link</button>
+    </div>`;
+  }
+  if(m==='iban'){
+    return `
+      <label>Recipient IBAN or card number</label>
+      <input type="text" id="tf_target" placeholder="DE89 3704 0044 0532 0130 00">
+      <label>Amount (USD)</label>
+      <input type="text" id="tf_amount" placeholder="0.00">
+      <label style="display:flex;align-items:center;gap:8px;margin-top:16px;">
+        <input type="checkbox" id="tf_recurring" style="width:auto;"> Make this a recurring payment
+      </label>
+      <button class="btn accent" style="margin-top:16px;" onclick="submitSend('iban')">Review transfer</button>
+    `;
+  }
+  return `
+    <label>Recipient</label>
+    <select id="tf_target">
+      <option>J. Alvarez</option>
+      <option>M. Chen</option>
+      <option>New contact…</option>
+    </select>
+    <label>Amount (USD)</label>
+    <input type="text" id="tf_amount" placeholder="0.00">
+    <label>Category</label>
+    <select id="tf_cat"><option>Transfer</option><option>Rent</option><option>Gift</option><option>Business</option></select>
+    <button class="btn accent" style="margin-top:16px;" onclick="submitSend('contact')">Review transfer</button>
+  `;
+}
+function qrBoxHtml(){
+  let cells='';
+  const seed=[1,0,1,1,0,1,0,1];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const on = (r*3+c*7+seed[(r+c)%8])%3===0;
+    cells += `<div style="opacity:${on?1:0}"></div>`;
+  }
+  return `<div class="qr-box">${cells}</div>`;
+}
+function submitSend(method){
+  const amtRaw = document.getElementById('tf_amount') ? document.getElementById('tf_amount').value : '';
+  const amt = parseFloat(amtRaw);
+  const target = document.getElementById('tf_target') ? document.getElementById('tf_target').value : 'Recipient';
+  if(!amt || amt<=0){ toast('Enter a valid amount'); return; }
+  const recurring = document.getElementById('tf_recurring') && document.getElementById('tf_recurring').checked;
+  state.accounts[0].balance -= amt;
+  state.transactions.unshift({ id:'t'+Date.now(), name:'Transfer to '+target, cat:'Transfer', amt:-amt, date:'Just now' });
+  if(recurring) state.templates.push({ id:'r'+Date.now(), name:'To '+target, amt:amt, freq:'Monthly' });
+  closeModal();
+  toast('Transfer of '+fmt(amt)+' sent to '+target);
+}
+function modalRequest(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Request money</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>From</label>
+    <input type="text" id="rq_from" placeholder="Name or email">
+    <label>Amount (USD)</label>
+    <input type="text" id="rq_amount" placeholder="0.00">
+    <label>Note</label>
+    <input type="text" id="rq_note" placeholder="What's this for?">
+    <button class="btn accent" style="margin-top:16px;" onclick="submitRequest()">Send request</button>
+  </div>`;
+}
+function submitRequest(){
+  const from = document.getElementById('rq_from').value || 'Contact';
+  const amt = parseFloat(document.getElementById('rq_amount').value);
+  if(!amt || amt<=0){ toast('Enter a valid amount'); return; }
+  closeModal();
+  toast('Request for '+fmt(amt)+' sent to '+from);
+}
+function modalExchange(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Currency exchange</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>From</label>
+    <select id="ex_from"><option>USD</option><option>EUR</option><option>BTC</option></select>
+    <label>To</label>
+    <select id="ex_to"><option selected>EUR</option><option>USD</option><option>BTC</option></select>
+    <label>Amount</label>
+    <input type="text" id="ex_amount" placeholder="0.00" oninput="updateExRate()">
+    <div class="field-note" id="ex_result" style="margin-top:10px;font-size:13px;">Enter an amount to see the converted total.</div>
+    <button class="btn accent" style="margin-top:16px;" onclick="submitExchange()">Convert</button>
+  </div>`;
+}
+function updateExRate(){
+  const rates = { USD:1, EUR:0.93, BTC:0.0000163 };
+  const from = document.getElementById('ex_from').value, to = document.getElementById('ex_to').value;
+  const amt = parseFloat(document.getElementById('ex_amount').value)||0;
+  const usd = amt / rates[from];
+  const converted = usd * rates[to];
+  document.getElementById('ex_result').innerText = amt ? `≈ ${converted.toFixed(to==='BTC'?6:2)} ${to} at today's rate` : 'Enter an amount to see the converted total.';
+}
+function submitExchange(){
+  const amt = parseFloat(document.getElementById('ex_amount').value);
+  if(!amt || amt<=0){ toast('Enter a valid amount'); return; }
+  const from = document.getElementById('ex_from').value, to = document.getElementById('ex_to').value;
+  state.transactions.unshift({ id:'t'+Date.now(), name:`Currency Exchange ${from}→${to}`, cat:'Exchange', amt:-amt, date:'Just now' });
+  closeModal(); toast('Exchange completed');
+}
+function modalTopup(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Top up account</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>Top up to</label>
+    <select id="tu_target">${state.accounts.map(a=>`<option>${a.name}</option>`).join('')}</select>
+    <label>Amount (USD)</label>
+    <input type="text" id="tu_amount" placeholder="0.00">
+    <button class="btn accent" style="margin-top:16px;" onclick="submitTopup()">Top up</button>
+  </div>`;
+}
+function submitTopup(){
+  const amt = parseFloat(document.getElementById('tu_amount').value);
+  if(!amt || amt<=0){ toast('Enter a valid amount'); return; }
+  const name = document.getElementById('tu_target').value;
+  const acc = state.accounts.find(a=>a.name===name);
+  acc.balance += amt;
+  state.transactions.unshift({ id:'t'+Date.now(), name:'Top up — '+acc.name, cat:'Income', amt:amt, date:'Just now' });
+  closeModal(); toast('Top up successful');
+}
+
+/* ================= Chat modal ================= */
+function modalChat(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Support chat</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <div style="max-height:320px;overflow-y:auto;margin-bottom:12px;">
+      ${state.chat.map(m=>`<div class="chat-bubble ${m.from==='me'?'me':'them'}">${m.text}</div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="chat_input" placeholder="Type a message…" style="flex:1;">
+      <button class="btn small" onclick="sendChat()">Send</button>
+    </div>
+    <button class="btn ghost btn-row" style="width:100%;text-align:center;margin-top:8px;" onclick="toast('File attached (demo)')">${ic('paperclip',15)} Attach a file</button>
+  </div>`;
+}
+function sendChat(){
+  const input = document.getElementById('chat_input');
+  if(!input.value.trim()) return;
+  state.chat.push({from:'me', text: input.value.trim()});
+  render();
+  setTimeout(()=>{
+    state.chat.push({from:'them', text:'Got it — a specialist will follow up shortly. Anything else I can help with?'});
+    render();
+  }, 700);
+}
+
+/* ================= Transfers hub ================= */
+function screenTransfersHub(){
+  return `
+  <h2 style="font-size:21px;margin:0 0 4px 0;">Transfers</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Move money, exchange currencies, or manage recurring payments.</p>
+  <div class="grid2" style="margin-bottom:18px;">
+    <button class="btn secondary btn-row" onclick="openModal('send')">${ic('sendArrow',17)} Send money</button>
+    <button class="btn secondary btn-row" onclick="openModal('request')">${ic('requestArrow',17)} Request money</button>
+    <button class="btn secondary btn-row" onclick="openModal('exchange')">${ic('exchange',17)} Exchange</button>
+    <button class="btn secondary btn-row" onclick="toast('Cash withdrawal code generated: 8841')">${ic('landmark',17)} Cash withdrawal</button>
+  </div>
+  <div class="section-title"><h3>Recurring payments</h3></div>
+  <div class="card-surface">
+  ${state.templates.map(r=>`<div class="tx-row"><div class="tx-icon">${ic('exchange',18)}</div><div class="tx-info"><div class="t1">${r.name}</div><div class="t2">${r.freq}</div></div><div class="tx-amt">${fmt(r.amt)}</div></div>`).join('') || '<div class="empty">No recurring payments set up yet.</div>'}
+  </div>
+  <button class="btn ghost btn-row" style="width:100%;text-align:center;margin-top:10px;" onclick="openModal('send')">${ic('plus',15)} Create a payment template</button>
+  `;
+}
+
+/* ================= Corporate ================= */
+function screenCorporate(){
+  if(!state.corporate){
+    return `
+    <h2 style="font-size:21px;margin:0 0 4px 0;">Corporate accounts</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">Set up a business account and manage members with role‑based access.</p>
+    <label>Company name</label>
+    <input type="text" id="co_name" placeholder="e.g. Fieldstone Studio LLC">
+    <label>Industry</label>
+    <select id="co_industry"><option>Retail</option><option>Technology</option><option>Consulting</option><option>Hospitality</option></select>
+    <button class="btn accent" style="margin-top:16px;" onclick="createCorporate()">Create corporate account</button>
+    `;
+  }
+  const co = state.corporate;
+  return `
+  <h2 style="font-size:21px;margin:0 0 4px 0;">${co.name}</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">${co.industry} · Corporate account</p>
+  <div class="balance-card" style="margin-bottom:16px;">
+    <div class="label">Business balance</div>
+    <div class="amount" style="font-size:28px;">${fmt(co.balance)}</div>
+  </div>
+  <div class="section-title"><h3>Members</h3><a onclick="openAddMember()">${ic('plus',13)} Add member</a></div>
+  <div class="card-surface">
+    ${co.members.map((m,i)=>`<div class="member-row">
+      <div class="member-init">${m.name.charAt(0)}</div>
+      <div style="flex:1;"><div style="font-weight:600;font-size:14px;">${m.name}</div><div style="font-size:12px;color:var(--muted);">${m.role}</div></div>
+      <button class="icon-btn" style="color:var(--danger);" onclick="removeMember(${i})">${ic('trash',16)}</button>
+    </div>`).join('') || '<div class="empty">No members added yet.</div>'}
+  </div>
+  `;
+}
+function createCorporate(){
+  const name = document.getElementById('co_name').value.trim();
+  if(!name){ toast('Enter a company name'); return; }
+  const industry = document.getElementById('co_industry').value;
+  state.corporate = { name, industry, balance: 12500, members:[{name:state.profile.name||'You', role:'Owner'}] };
+  render(); toast('Corporate account created');
+}
+function openAddMember(){ state.ui.modal='member'; render(); }
+function modalMember(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Add team member</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>Full name</label>
+    <input type="text" id="mem_name" placeholder="e.g. Priya Nair">
+    <label>Role</label>
+    <select id="mem_role"><option>Admin</option><option>Bookkeeper</option><option>Viewer</option></select>
+    <button class="btn accent" style="margin-top:16px;" onclick="addMember()">Add member</button>
+  </div>`;
+}
+function addMember(){
+  const name = document.getElementById('mem_name').value.trim();
+  if(!name){ toast('Enter a name'); return; }
+  const role = document.getElementById('mem_role').value;
+  state.corporate.members.push({name, role});
+  closeModal(); toast('Member added');
+}
+function removeMember(i){ state.corporate.members.splice(i,1); render(); }
+
+/* ================= Profile ================= */
+function screenProfile(){
+  const p = state.profile;
+  return `
+  <h2 style="font-size:21px;margin:0 0 16px 0;">Profile &amp; settings</h2>
+  <div style="text-align:center;margin-bottom:18px;">
+    <div class="avatar-init">${(p.name||'A').charAt(0).toUpperCase()}</div>
+    <div style="font-weight:600;">${p.name||'Sam Whitfield'}</div>
+    <div style="font-size:12.5px;color:var(--muted);">${p.email||'sam@email.com'}</div>
+    <span class="pill" style="margin-top:8px;">${p.kycStatus==='verified'?'KYC verified':'KYC pending'}</span>
+  </div>
+  <div class="card-surface">
+    <div class="toggle-row" onclick="openModal('editProfile')" style="cursor:pointer;">
+      <div class="tr-left">${ic('edit',18)}<div class="tr-label">Edit profile</div></div>
+      <div class="row-chevron">${ic('chevron',16)}</div>
+    </div>
+    <div class="toggle-row" onclick="openModal('docs')" style="cursor:pointer;">
+      <div class="tr-left">${ic('lock',18)}<div class="tr-label">Documents &amp; KYC status</div></div>
+      <div class="row-chevron">${ic('chevron',16)}</div>
+    </div>
+    <div class="toggle-row" onclick="openModal('password')" style="cursor:pointer;">
+      <div class="tr-left">${ic('key',18)}<div class="tr-label">Change password</div></div>
+      <div class="row-chevron">${ic('chevron',16)}</div>
+    </div>
+  </div>
+  <div class="card-surface">
+    <div class="toggle-row">
+      <div class="tr-left">${ic('bell',18)}<div><div class="tr-label">OTP verification</div><div class="tr-sub">Confirm payments with a one‑time code</div></div></div>
+      <button class="switch ${p.otp?'on':''}" onclick="toggleOtp()"><div class="knob"></div></button>
+    </div>
+    <div class="toggle-row">
+      <div class="tr-left">${ic('bell',18)}<div><div class="tr-label">Notifications</div><div class="tr-sub">Balance alerts and offers</div></div></div>
+      <button class="switch ${p.notifs?'on':''}" onclick="toggleNotifs()"><div class="knob"></div></button>
+    </div>
+    <div class="toggle-row">
+      <div class="tr-left">${ic('globe',18)}<div class="tr-label">Language</div></div>
+      <select style="width:auto;padding:6px 10px;" onchange="setLang(this.value)">
+        ${['English','Español','Deutsch','Français'].map(l=>`<option ${p.lang===l?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="toggle-row">
+      <div class="tr-left">${ic('tag',18)}<div class="tr-label">Pricing plan</div></div>
+      <select style="width:auto;padding:6px 10px;" onchange="setPlan(this.value)">
+        ${['Everyday','Plus','Premium','Business'].map(l=>`<option ${p.plan===l?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+  <button class="btn secondary btn-row" onclick="openModal('chat')">${ic('chat',17)} Contact customer support</button>
+  `;
+}
+function toggleOtp(){ state.profile.otp=!state.profile.otp; render(); }
+function toggleNotifs(){ state.profile.notifs=!state.profile.notifs; render(); }
+function setLang(v){ state.profile.lang=v; toast('Language set to '+v); }
+function setPlan(v){ state.profile.plan=v; toast('Pricing plan changed to '+v); }
+function modalEditProfile(){
+  const p = state.profile;
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Edit profile</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>Full name</label><input type="text" id="ep_name" value="${p.name}">
+    <label>Email</label><input type="email" id="ep_email" value="${p.email}">
+    <label>Phone</label><input type="tel" id="ep_phone" value="${p.phone}">
+    <button class="btn accent" style="margin-top:16px;" onclick="saveProfile()">Save changes</button>
+  </div>`;
+}
+function saveProfile(){
+  state.profile.name = document.getElementById('ep_name').value;
+  state.profile.email = document.getElementById('ep_email').value;
+  state.profile.phone = document.getElementById('ep_phone').value;
+  closeModal(); toast('Profile updated');
+}
+function modalDocs(){
+  const p = state.profile;
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Documents &amp; KYC</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <div class="kyc-row"><div class="dot"></div><div><div style="font-weight:600;font-size:14px;">Government ID</div><div style="font-size:12px;color:var(--muted);">${p.kycStatus==='verified'?'Verified':'Pending'}</div></div></div>
+    <div class="kyc-row"><div class="dot"></div><div><div style="font-weight:600;font-size:14px;">Proof of address</div><div style="font-size:12px;color:var(--muted);">${p.kycStatus==='verified'?'Verified':'Pending'}</div></div></div>
+    <button class="btn secondary" style="margin-top:8px;" onclick="toast('Document uploaded (demo)')">Upload new document</button>
+    <button class="btn ghost" style="width:100%;text-align:center;" onclick="requestKycReset()">Request KYC reset</button>
+  </div>`;
+}
+function requestKycReset(){ state.profile.kycStatus='pending'; closeModal(); toast('KYC reset requested'); }
+function modalPassword(){
+  return `<div class="modal-sheet">
+    <div class="modal-head"><h3>Change password</h3><button class="close" onclick="closeModal()">${ic('close',18)}</button></div>
+    <label>Current password</label><input type="password" placeholder="••••••••">
+    <label>New password</label><input type="password" placeholder="••••••••">
+    <label>Confirm new password</label><input type="password" placeholder="••••••••">
+    <button class="btn accent" style="margin-top:16px;" onclick="closeModal();toast('Password updated')">Update password</button>
+  </div>`;
+}
+
+/* ================= Shell: header, sidebar, bottom nav, router ================= */
+const NAV_ITEMS = [
+  {id:'home', icon:'home', label:'Home'},
+  {id:'accounts', icon:'cards', label:'Accounts & Cards'},
+  {id:'transfers', icon:'transfer', label:'Transfers'},
+  {id:'corporate', icon:'business', label:'Business'},
+  {id:'profile', icon:'user', label:'Profile'},
+];
+function go(step){ state.step = step; render(); }
+function nav(section){ state.nav = section; state.ui.modal=null; render(); }
+
+function topbarHtml(){
+  const initials = (state.profile.name||'A').trim().charAt(0).toUpperCase();
+  return `<header class="topbar">
+    <div class="brand"><div class="mark">A</div><div class="name">Aurelio Bank</div></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="toast('No new notifications')" aria-label="Notifications">${ic('bell',19)}</button>
+      <button class="avatar-btn" onclick="nav('profile')" aria-label="Profile">${initials}</button>
+    </div>
+  </header>`;
+}
+function sidebarHtml(){
+  return `<nav class="sidebar">
+    ${NAV_ITEMS.map(i=>`<div class="nav-item ${state.nav===i.id?'active':''}" onclick="nav('${i.id}')">${ic(i.icon,19)}<span>${i.label}</span></div>`).join('')}
+  </nav>`;
+}
+function bottomNavHtml(){
+  return `<nav class="bottomnav">
+    ${NAV_ITEMS.map(i=>`<button class="nav-btn ${state.nav===i.id?'active':''}" onclick="nav('${i.id}')">${ic(i.icon,20)}<span>${i.label.split(' ')[0]}</span></button>`).join('')}
+  </nav>`;
+}
+function modalHtml(){
+  if(!state.ui.modal) return '';
+  const map = {
+    send: modalSend, request: modalRequest, exchange: modalExchange, topup: modalTopup,
+    account: modalAccount, tx: modalTx, chat: modalChat, member: modalMember,
+    editProfile: modalEditProfile, docs: modalDocs, password: modalPassword,
+  };
+  const fn = map[state.ui.modal];
+  return `<div class="modal-overlay" onclick="if(event.target===this) closeModal()">${fn ? fn() : ''}</div>`;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(!state.onboarded){
+    const inner = state.step==='welcome' ? screenWelcome()
+      : state.step==='form' ? screenForm()
+      : state.step==='kyc' ? screenKyc()
+      : screenDone();
+    app.innerHTML = `<div class="auth-shell"><div class="auth-card">${inner}</div></div>`;
+    return;
+  }
+  const sectionMap = {
+    home: screenHome, accounts: screenAccounts, transfers: screenTransfersHub,
+    corporate: screenCorporate, profile: screenProfile, transactions: screenTransactions,
+  };
+  const body = (sectionMap[state.nav] || screenHome)();
+  app.innerHTML = `
+    ${topbarHtml()}
+    <div class="layout">
+      ${sidebarHtml()}
+      <main class="content"><div class="content-inner">${body}</div></main>
+    </div>
+    ${bottomNavHtml()}
+    ${modalHtml()}
+    ${state.ui.toast?`<div class="toast">${state.ui.toast}</div>`:''}
+  `;
+}
+
+render();
+</script>
+</body>
+</html>
